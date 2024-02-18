@@ -1,26 +1,50 @@
-from string import ascii_letters, digits, punctuation
-import secrets
+import random
+import string
 
 def generate_password(num_letters, num_digits, num_special_chars, length):
-    charset = []
-    charset.extend(secrets.choice(ascii_letters.upper()) for _ in range(num_letters))
-    charset.extend(secrets.choice(ascii_letters.lower()) for _ in range(num_letters))
-    charset.extend(secrets.choice(digits) for _ in range(num_digits))
-    charset.extend(secrets.choice(punctuation) for _ in range(num_special_chars))
+    if num_letters + num_digits + num_special_chars > length:
+        raise ValueError("The sum of specified characters exceeds the desired password length")
+    
+    password = []
 
-    if len(charset) > length:
-        raise ValueError("The generated character set is larger than the desired password length")
+    # Add at least one of each character type
+    password.extend(random.sample(string.ascii_uppercase, num_letters))
+    password.extend(random.sample(string.ascii_lowercase, num_letters))
+    password.extend(random.sample(string.digits, num_digits))
+    password.extend(random.sample(string.punctuation, num_special_chars))
 
-    for _ in range(length - len(charset)):
-        charset.append(secrets.choice(charset))
+    # Fill up the remaining length with random characters
+    remaining_length = length - (num_letters + num_digits + num_special_chars)
+    password.extend(random.sample(string.ascii_letters + string.digits + string.punctuation, remaining_length))
 
-    random.shuffle(charset)
+    # Shuffle the password
+    random.shuffle(password)
 
-    return ''.join(charset)
+    return ''.join(password)
 
-num_letters = int(input(f"how many letters ? \n"))
-num_digits = int(input(f"how many digits ? \n"))
-num_special_chars = int(input(f"how many special characters ? \n"))
-length = int(input(f"how long should the password be ? \n"))
+def check_password_strength(password):
+    # Check password strength based on commonly accepted criteria
+    # You can customize this function based on your specific requirements
+    # For example, you can check for length, presence of different character types, etc.
+    # For simplicity, let's just check the length and presence of each character type
+    has_upper = any(char.isupper() for char in password)
+    has_lower = any(char.islower() for char in password)
+    has_digit = any(char.isdigit() for char in password)
+    has_special = any(char in string.punctuation for char in password)
+    length = len(password)
 
-print(generate_password(num_letters, num_digits, num_special_chars, length))
+    if length < 8 or not (has_upper and has_lower and has_digit and has_special):
+        return "Weak"
+    elif length < 12 or not (has_upper and has_lower and has_digit and has_special):
+        return "Medium"
+    else:
+        return "Strong"
+
+num_letters = int(input("How many uppercase and lowercase letters? "))
+num_digits = int(input("How many digits? "))
+num_special_chars = int(input("How many special characters? "))
+length = int(input("How long should the password be? "))
+
+password = generate_password(num_letters, num_digits, num_special_chars, length)
+print("Generated Password:", password)
+print("Password Strength:", check_password_strength(password))
